@@ -18,11 +18,14 @@ export default function AnalysisResult() {
     return <Navigate to="/" replace />;
   }
 
-  const getCategory = (s) => {
-    if (s <= 33) return { label: 'Low Anxiety', color: '#10b981', desc: 'You seem calm and prepared. Great job managing your stress!' };
-    if (s <= 66) return { label: 'Moderate Anxiety', color: '#f59e0b', desc: 'You have some pre-exam jitters, which is normal and can help keep you focused.' };
-    return { label: 'High Anxiety', color: '#ef4444', desc: 'You are experiencing significant stress. Taking a step back to breathe and reset is highly recommended.' };
-  };
+  const getCategory = (anxiety_level) => {
+  if (anxiety_level === "Low Anxiety")      
+    return { label: 'Low Anxiety',      color: '#10b981', desc: 'You seem calm and prepared. Great job managing your stress!' };
+  if (anxiety_level === "Moderate Anxiety") 
+    return { label: 'Moderate Anxiety', color: '#f59e0b', desc: 'You have some pre-exam jitters, which is normal and can help keep you focused.' };
+  return                                    
+    { label: 'High Anxiety',     color: '#ef4444', desc: 'You are experiencing significant stress. Taking a step back to breathe and reset is highly recommended.' };
+};
 
   const { label, color, desc } = getCategory(score);
 
