@@ -11,35 +11,47 @@ export default function InputSection() {
 
   const charLimit = 500;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!text.trim()) return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!text.trim()) return;
 
-    setIsAnalyzing(true);
+  setIsAnalyzing(true);
 
-    // Simulate AI Processing Time
-    setTimeout(() => {
-      // Mock result calculation based on text length and some keywords
-      const words = text.toLowerCase().split(' ');
-      const highStressWords = ['fail', 'scared', 'nervous', 'panic', 'stress', 'hard', 'blank'];
-      let stressScore = 30 + Math.random() * 20; // Base score 30-50
+  try {
+    // ✅ Call your FastAPI backend
+    const response = await fetch("http://127.0.0.1:8000/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ statement: text }),
+    });
 
-      words.forEach(w => {
-        if (highStressWords.includes(w)) stressScore += 15;
-      });
+    const result = await response.json();
+    // result = { statement, anxiety_level, confidence }
 
-      stressScore = Math.min(Math.max(stressScore, 0), 100);
+    // ✅ Save to localStorage for dashboard history
+    const history = JSON.parse(localStorage.getItem('anxietyHistory') || '[]');
+    const newEntry = {
+      date: new Date().toISOString(),
+      score: result.confidence,
+      anxiety_level: result.anxiety_level,
+      text
+    };
+    localStorage.setItem('anxietyHistory', JSON.stringify([...history, newEntry]));
 
-      // Save to local storage for dashboard history
-      const history = JSON.parse(localStorage.getItem('anxietyHistory') || '[]');
-      const newEntry = { date: new Date().toISOString(), score: Math.round(stressScore), text };
-      localStorage.setItem('anxietyHistory', JSON.stringify([...history, newEntry]));
+    setIsAnalyzing(false);
 
-      setIsAnalyzing(false);
-      navigate('/result', { state: { score: Math.round(stressScore) } });
+    // ✅ Pass real result to your result page
+    navigate('/result', { state: { 
+      score: result.confidence, 
+      anxiety_level: result.anxiety_level 
+    }});
 
-    }, 3000);
-  };
+  } catch (error) {
+    console.error("Backend error:", error);
+    setIsAnalyzing(false);
+    alert("Could not connect to backend. Make sure FastAPI is running on port 8000.");
+  }
+};
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[80vh]">
